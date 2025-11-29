@@ -66,9 +66,9 @@ def get_user_color(username):
         # Generate pleasant colors (avoid too dark or too light)
         hue = hash_val % 360
         # Convert HSV to RGB for nice varied colors
-        c = 0.8  # saturation
+        c = 0.6  # saturation
         x = c * (1 - abs((hue / 60) % 2 - 1))
-        m = 0.3  # brightness offset
+        m = 0.4  # brightness offset
         
         if hue < 60:
             r, g, b = c, x, 0
@@ -83,7 +83,11 @@ def get_user_color(username):
         else:
             r, g, b = c, 0, x
             
-        r, g, b = int((r + m) * 255), int((g + m) * 255), int((b + m) * 255)
+        # Ensure values are in valid range 0-255
+        r = max(0, min(255, int((r + m) * 255)))
+        g = max(0, min(255, int((g + m) * 255)))
+        b = max(0, min(255, int((b + m) * 255)))
+        
         user_colors[username] = (r, g, b)
     
     return user_colors[username]
@@ -116,7 +120,7 @@ def load_emote(emote_name):
     
     return None
 
-def render_chat_message(message, x, y, max_width):
+def render_chat_message(message, x, y, max_width, message_font):
     """Render chat message with colored username and emotes"""
     if '[Twitch]' in message:
         # Parse: [Twitch] username: message
@@ -132,7 +136,7 @@ def render_chat_message(message, x, y, max_width):
             
             # Render colored username
             user_color = get_user_color(username)
-            username_surface = font.render(username + ':', True, user_color)
+            username_surface = message_font.render(username + ':', True, user_color)
             screen.blit(username_surface, (x, y))
             x += username_surface.get_width() + 8
             
@@ -144,7 +148,7 @@ def render_chat_message(message, x, y, max_width):
                     screen.blit(emote, (x, y + 2))
                     x += 30
                 else:
-                    word_surface = font.render(word + ' ', True, TEXT_COLOR)
+                    word_surface = message_font.render(word + ' ', True, TEXT_COLOR)
                     if x + word_surface.get_width() > max_width + CHAT_X:
                         return y + LINE_HEIGHT  # Next line
                     screen.blit(word_surface, (x, y))
@@ -153,7 +157,7 @@ def render_chat_message(message, x, y, max_width):
             return y + LINE_HEIGHT
     else:
         # Regular rendering for other platforms
-        text_surface = font.render(message, True, TEXT_COLOR)
+        text_surface = message_font.render(message, True, TEXT_COLOR)
         screen.blit(text_surface, (x, y))
         return y + LINE_HEIGHT
 
@@ -167,7 +171,7 @@ def render_chat():
     
     y = CHAT_Y + 10
     for msg in chat_log[-MAX_CHAT_LINES:]:
-        y = render_chat_message(msg, CHAT_X, y, CHAT_WIDTH)
+        y = render_chat_message(msg, CHAT_X, y, CHAT_WIDTH, font)
 
 def truncate_text(text, font, max_width):
     """Truncate text to fit width with ellipsis"""
