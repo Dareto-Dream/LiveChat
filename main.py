@@ -115,8 +115,8 @@ def render_spotify():
 
 # Start handlers
 threading.Thread(target=run_twitch, args=(chat_queue,), daemon=True).start()
-threading.Thread(target=run_youtube, args=(chat_queue,), daemon=True).start()
-threading.Thread(target=run_tiktok, args=(chat_queue,), daemon=True).start()
+# threading.Thread(target=run_youtube, args=(chat_queue,), daemon=True).start()
+# threading.Thread(target=run_tiktok, args=(chat_queue,), daemon=True).start()
 
 # Main loop
 running = True
