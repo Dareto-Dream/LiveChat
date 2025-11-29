@@ -19,30 +19,55 @@ sp = spotipy.Spotify(auth_manager=SpotifyOAuth(
 ))
 
 def get_current_song():
-    playback = sp.current_playback()
-    if playback and playback.get("item"):
-        song = playback["item"]["name"]
-        artist = ", ".join(a["name"] for a in playback["item"]["artists"])
-        album_url = playback["item"]["album"]["images"][0]["url"]
-        is_playing = playback["is_playing"]
-        return {"song": song, "artist": artist, "cover_url": album_url, "playing": is_playing}
+    try:
+        playback = sp.current_playback()
+        if playback and playback.get("item"):
+            song = playback["item"]["name"]
+            artist = ", ".join(a["name"] for a in playback["item"]["artists"])
+            album = playback["item"]["album"]["name"]
+            album_url = playback["item"]["album"]["images"][0]["url"]
+            is_playing = playback["is_playing"]
+            
+            return {
+                "song": song, 
+                "artist": artist, 
+                "album": album,
+                "cover_url": album_url, 
+                "playing": is_playing
+            }
+    except Exception as e:
+        print(f"[Spotify] Error getting current song: {e}")
+    
     return None
 
 def skip():
-    sp.next_track()
+    try:
+        sp.next_track()
+    except Exception as e:
+        print(f"[Spotify] Error skipping: {e}")
 
 def previous():
-    sp.previous_track()
+    try:
+        sp.previous_track()
+    except Exception as e:
+        print(f"[Spotify] Error going to previous: {e}")
 
 def toggle_play():
-    playback = sp.current_playback()
-    if playback and playback["is_playing"]:
-        sp.pause_playback()
-    else:
-        sp.start_playback()
+    try:
+        playback = sp.current_playback()
+        if playback and playback["is_playing"]:
+            sp.pause_playback()
+        else:
+            sp.start_playback()
+    except Exception as e:
+        print(f"[Spotify] Error toggling playback: {e}")
 
 def load_album_cover(url):
-    response = requests.get(url)
-    image_bytes = io.BytesIO(response.content)
-    image = pygame.image.load(image_bytes)
-    return pygame.transform.scale(image, (100, 100))
+    try:
+        response = requests.get(url)
+        image_bytes = io.BytesIO(response.content)
+        image = pygame.image.load(image_bytes)
+        return pygame.transform.scale(image, (120, 120))
+    except Exception as e:
+        print(f"[Spotify] Error loading album cover: {e}")
+        return None
